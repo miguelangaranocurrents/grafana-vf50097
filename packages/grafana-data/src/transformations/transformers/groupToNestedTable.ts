@@ -222,6 +222,11 @@ export const groupToNestedTable: DataTransformerInfo<
             const fieldName = getFieldDisplayName(field);
             const { aggregations } = rule;
             const valuesByAggregation: Record<string, unknown[]> = {};
+            // Seed every aggregation with an empty array so frames with no rows still
+            // produce well-formed (empty) aggregation columns instead of undefined values.
+            for (const aggregation of aggregations) {
+              valuesByAggregation[aggregation] = [];
+            }
 
             valuesByGroupKey.forEach((value) => {
               const fieldWithValuesForGroup = value[fieldName];

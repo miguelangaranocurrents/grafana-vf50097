@@ -116,7 +116,19 @@ function fieldNameFallback(fields: Set<string>) {
     };
   } else if (fields.has('Time') || fields.has('time')) {
     fallback = (field: Field, frame: DataFrame) => {
-      return frame.meta?.typeVersion == null && field.type === FieldType.time;
+      if (frame.meta?.typeVersion != null || field.type !== FieldType.time) {
+        return false;
+      }
+      // Only treat the frame's single time field as the conventional "time" field.
+      // Frames with several time fields must not have all of them matched when a
+      // transform only excludes (or includes) the field literally named "time".
+      let timeFields = 0;
+      for (const f of frame.fields) {
+        if (f.type === FieldType.time) {
+          timeFields++;
+        }
+      }
+      return timeFields === 1;
     };
   }
 
